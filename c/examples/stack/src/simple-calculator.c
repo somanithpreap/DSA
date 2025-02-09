@@ -1,4 +1,4 @@
-#include "../stack/stack.h"
+#include "../../../stack/stack.h"
 #include <string.h>
 
 bool isOperator(char c);
@@ -11,11 +11,12 @@ int main() {
     Stack* expression = createStack();
     char raw_token[11];
 
+    printf("Enter '=' to calculate and end the program.\n\n");
+
     // Save the state of the previous input
     // 0 : empty stack or open parenthesis or operator
     // 1 : integer or close parenthesis
     char prev = 0;
-
     while (1) {
         if (prev == 0)
             printf("Enter an operand or open parenthesis  : ");
@@ -24,7 +25,7 @@ int main() {
 
         // Read and sanitize the input
         if (fgets(raw_token, sizeof(raw_token), stdin)) {
-            raw_token[strcspn(raw_token, "\n")] = 0;
+            raw_token[strcspn(raw_token, "\n")] = 0; // Remove trailing newline
             size_t token_len = strlen(raw_token);
             if (token_len == 1 && raw_token[0] == '=') break;
 
@@ -58,10 +59,10 @@ int main() {
     reverseStack(expression);
 
     Stack* postfix = infixToPostfix(expression);
-    freeStack(&expression);
+    destroyStack(&expression);
 
     printf("\nResult: %d\n", calculate(postfix));
-    freeStack(&postfix);
+    destroyStack(&postfix);
 }
 
 bool isOperator(char c) {
@@ -111,7 +112,7 @@ Stack* infixToPostfix(Stack* expression) {
     while (!stackIsEmpty(operators))
         pushToStack(postfix, popFromStack(operators));
 
-    freeStack(&operators);
+    destroyStack(&operators);
     reverseStack(postfix);
     return postfix;
 }
@@ -154,6 +155,6 @@ int calculate(Stack* postfix) {
     }
 
     int result = atoi(popFromStack(operands));
-    freeStack(&operands);
+    destroyStack(&operands);
     return result;
 }

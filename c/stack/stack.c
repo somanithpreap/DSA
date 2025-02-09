@@ -11,7 +11,7 @@ bool stackIsEmpty(Stack* stack) {
 }
 
 void pushToStack(Stack* stack, char* data) {
-    LLNode* newNode = (LLNode*)malloc(sizeof(LLNode));
+    StackNode* newNode = (StackNode*)malloc(sizeof(StackNode));
     newNode->data = data;
     newNode->next = stack->top;
     stack->top = newNode;
@@ -23,7 +23,7 @@ char* popFromStack(Stack* stack) {
         exit(1);
     }
 
-    LLNode* temp = stack->top;
+    StackNode* temp = stack->top;
     stack->top = stack->top->next;
     char* popped = temp->data;
     free(temp);
@@ -38,17 +38,21 @@ char* peekStack(Stack* stack) {
     return stack->top->data;
 }
 
-void freeStack(Stack** stack) {
-    while (!stackIsEmpty(*stack))
-        free(popFromStack(*stack));
+void clearStack(Stack* stack) {
+	while (!stackIsEmpty(stack))
+        free(popFromStack(stack));
+}
+
+void destroyStack(Stack** stack) {
+	clearStack(*stack);
     free(*stack);
     *stack = NULL;
 }
 
-void reverseStack(Stack *stack) {
-    LLNode* prev = NULL;
-    LLNode* current = stack->top;
-    LLNode* next = NULL;
+void reverseStack(Stack* stack) {
+    StackNode* prev = NULL;
+    StackNode* current = stack->top;
+    StackNode* next = NULL;
 
     while (current != NULL) {
         next = current->next;

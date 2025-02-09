@@ -5,16 +5,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-typedef struct LLNode {
+typedef struct StackNode {
     char* data;
-    struct LLNode* next;
-} LLNode;
+    struct StackNode* next;
+} StackNode;
 
 typedef struct Stack {
-    LLNode* top;
+    StackNode* top;
 } Stack;
-
-
 
 Stack* createStack();
 bool stackIsEmpty(Stack* stack);
@@ -23,6 +21,7 @@ char* popFromStack(Stack* stack);
 char* peekStack(Stack* stack);
 
 void reverseStack(Stack* stack);
-void freeStack(Stack** stack);
+void clearStack(Stack* stack);
+void destroyStack(Stack** stack);
 
 #endif
