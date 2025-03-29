@@ -2,23 +2,39 @@
 
 Stack* createStack() {
     Stack* stack = (Stack*)malloc(sizeof(Stack));
+    if (!stack) {
+		printf("Memory allocation failed.\n");
+		exit(1);
+	}
     stack->top = NULL;
     return stack;
 }
 
 bool stackIsEmpty(Stack* stack) {
+	if (!stack) return true;
     return stack->top == NULL;
 }
 
-void pushToStack(Stack* stack, char* data) {
+void pushToStack(Stack** stack, char* data) {
     StackNode* newNode = (StackNode*)malloc(sizeof(StackNode));
+    if (!newNode) {
+		printf("Memory allocation failed.\n");
+		exit(1);
+	}
     newNode->data = data;
-    newNode->next = stack->top;
-    stack->top = newNode;
+
+    if (!*stack) {
+    	newNode->next = NULL;
+    	*stack = createStack();
+    } else
+    	newNode->next = (*stack)->top;
+    (*stack)->top = newNode;
 }
 
 char* popFromStack(Stack* stack) {
+	if (!stack) return NULL;
     if (stackIsEmpty(stack)) {
+    	free(stack);
         printf("The stack is empty; there is no element to pop.\n");
         exit(1);
     }
@@ -31,6 +47,7 @@ char* popFromStack(Stack* stack) {
 }
 
 char* peekStack(Stack* stack) {
+	if (!stack) return NULL;
     if (stackIsEmpty(stack)) {
         printf("The stack is empty; there is no element to peek.\n");
         exit(1);
@@ -39,6 +56,7 @@ char* peekStack(Stack* stack) {
 }
 
 void clearStack(Stack* stack) {
+	if (!stack) return;
 	while (!stackIsEmpty(stack))
         free(popFromStack(stack));
 }

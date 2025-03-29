@@ -16,7 +16,7 @@ typedef struct Stack {
 
 Stack* createStack();
 bool stackIsEmpty(Stack* stack);
-void pushToStack(Stack* stack, char* data);
+void pushToStack(Stack** stack, char* data);
 char* popFromStack(Stack* stack);
 char* peekStack(Stack* stack);
 
