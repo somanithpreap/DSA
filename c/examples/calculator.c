@@ -7,8 +7,8 @@ bool isOperator(char c);
 bool isDigit(char c);
 bool isNumber(char* str, size_t len);
 int precedence(char c);
-Stack* infixToPostfix(Queue* expression);
-double calculate(Stack* postfix);
+Queue* infixToPostfix(Queue* expression);
+double calculate(Queue* postfix);
 
 int main() {
 	char expression[100];
@@ -25,13 +25,13 @@ int main() {
 		if (expression[i] == ' ') continue;
 
 		if (isOperator(expression[i]) || expression[i] == '(' || expression[i] == ')') {
- 			// Handle unary + or -
+			// Handle unary + or -
 			if ((expression[i] == '+' || expression[i] == '-') && isUnaryOperator(expression, i)) {
 				token[written++] = expression[i];
 				continue;
 			}
 
- 			// If there is a number in the buffer, enqueue it
+			// If there is a number in the buffer, enqueue it
 			if (written > 0) {
 				token[written] = '\0';
 				enqueue(&tokensQueue, strdup(token));
@@ -44,7 +44,7 @@ int main() {
 			enqueue(&tokensQueue, strdup(token));
 		} else {
 			// Append numbers and decimal points
-            if (expression[i] == '.' && written > 0 && strchr(token, '.') == NULL)
+			if (expression[i] == '.' && written > 0 && strchr(token, '.') == NULL)
 				token[written++] = '.';
 			else if (isDigit(expression[i]) || (expression[i] == '.' && written == 0))
 				token[written++] = expression[i];
@@ -56,12 +56,12 @@ int main() {
 		enqueue(&tokensQueue, strdup(token));
 	}
 
-	Stack* postfix = infixToPostfix(tokensQueue);
+	Queue* postfix = infixToPostfix(tokensQueue);
 	destroyQueue(&tokensQueue);
 
 	// Print result and free the stack
 	printf("Result: %g\n", calculate(postfix));
-	destroyStack(&postfix);
+	destroyQueue(&postfix);
 }
 
 bool isUnaryOperator(char *expression, size_t index) {
@@ -108,35 +108,36 @@ int precedence(char c) {
 	else return 0;
 }
 
-Stack* infixToPostfix(Queue* expression) {
+Queue* infixToPostfix(Queue* expression) {
 	if (queueIsEmpty(expression)) return NULL;
 
 	Stack* operators = createStack();
-	Stack* postfix = createStack();
+	Queue* postfix = createQueue();
 
 	while (!queueIsEmpty(expression)) {
 		char* token = dequeue(expression);
 
 		if (isNumber(token, strlen(token)))
-			pushToStack(&postfix, token);
+			enqueue(&postfix, token);
 		else if (token[0] == '(')
 			pushToStack(&operators, token);
 		else if (token[0] == ')') {
 			while (!stackIsEmpty(operators) && peekStack(operators)[0] != '(')
-				pushToStack(&postfix, popFromStack(operators));
+				enqueue(&postfix, popFromStack(operators));
 			// Check for mismatched parentheses
 			if (stackIsEmpty(operators)) {
 				destroyStack(&operators);
-				destroyStack(&postfix);
+				destroyQueue(&postfix);
 				clearQueue(expression);
 				free(expression);
+
 				printf("Invalid expression. Unexpected token `)`\n");
 				exit(-1);
 			}
 			popFromStack(operators); // Discard the open parenthesis
 		} else if (isOperator(token[0])) {
 			while (!stackIsEmpty(operators) && precedence(token[0]) <= precedence(peekStack(operators)[0]))
-				pushToStack(&postfix, popFromStack(operators));
+				enqueue(&postfix, popFromStack(operators));
 			pushToStack(&operators, token);
 		}
 	}
@@ -145,26 +146,26 @@ Stack* infixToPostfix(Queue* expression) {
 	while (!stackIsEmpty(operators)) {
 		if (peekStack(operators)[0] == '(') {
 			destroyStack(&operators);
-			destroyStack(&postfix);
+			destroyQueue(&postfix);
 			clearQueue(expression);
 			free(expression);
+
 			printf("Invalid expression. Unexpected token `(`\n");
 			exit(1);
-	 	}
-		pushToStack(&postfix, popFromStack(operators));
+		}
+		enqueue(&postfix, popFromStack(operators));
 	}
 
 	destroyStack(&operators);
-	reverseStack(postfix);
 	return postfix;
 }
 
-double calculate(Stack* postfix) {
-	if (stackIsEmpty(postfix)) return 0;
-	
+double calculate(Queue* postfix) {
+	if (queueIsEmpty(postfix)) return 0;
+
 	Stack* operands = createStack();
-	while (!stackIsEmpty(postfix)) {
-		char* token = popFromStack(postfix);
+	while (!queueIsEmpty(postfix)) {
+		char* token = dequeue(postfix);
 		if (isNumber(token, strlen(token)))
 			pushToStack(&operands, token);
 		else if (isOperator(token[0])) {
@@ -185,7 +186,7 @@ double calculate(Stack* postfix) {
 				case '/':
 					if (num2 == 0) {
 						destroyStack(&operands);
-						destroyStack(&postfix);
+						destroyQueue(&postfix);
 						printf("Division by zero is not allowed.\n");
 						exit(1);
 					}
