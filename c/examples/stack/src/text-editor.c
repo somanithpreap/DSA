@@ -27,15 +27,20 @@ int main() {
                 inputText[strcspn(inputText, "\n")] = 0; // Remove trailing newline
 
                 char* text_cp = (char*)malloc(strlen(text));
+                if (!text_cp) {
+					printf("Memory allocation failed.\n");
+					return 1;
+				}
+
                 strcpy(text_cp, text);
-                pushToStack(undoStack, text_cp); // Save current state for undo
+                pushToStack(&undoStack, text_cp); // Save current state for undo
                 strcat(text, inputText);
 
                 clearStack(redoStack);
                 break;
             case 2: // Undo
                 if (!stackIsEmpty(undoStack)) {
-                    pushToStack(redoStack, text); // Save current state for redo
+                    pushToStack(&redoStack, text); // Save current state for redo
                     char *undoText = popFromStack(undoStack);
                     strcpy(text, undoText);
                     free(undoText);
@@ -43,7 +48,7 @@ int main() {
                 break;
             case 3: // Redo
                 if (!stackIsEmpty(redoStack)) {
-                    pushToStack(undoStack, text); // Save current state for undo
+                    pushToStack(&undoStack, text); // Save current state for undo
                     char *redoText = popFromStack(redoStack);
                     strcpy(text, redoText);
                     free(redoText);
