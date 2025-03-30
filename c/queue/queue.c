@@ -17,22 +17,23 @@ bool queueIsEmpty(Queue* queue) {
 }
 
 void enqueue(Queue** queue, char* data) {
+	if (!queue) return;
+
 	QueueNode* newNode = (QueueNode*)malloc(sizeof(QueueNode));
 	if (!newNode) {
 		printf("Memory allocation failed.\n");
 		exit(1);
 	}
 	newNode->data = data;
-
 	newNode->next = NULL;
+
 	if (!*queue)
 		*queue = createQueue();
-	else {
-		if (queueIsEmpty(*queue))
-			(*queue)->front = newNode;
-		else
-			(*queue)->rear->next = newNode;
-	}
+
+	if (queueIsEmpty(*queue))
+		(*queue)->front = newNode;
+	else
+		(*queue)->rear->next = newNode;
 	(*queue)->rear = newNode;
 }
 
