@@ -20,7 +20,6 @@ int main() {
 	char token[64];
 	size_t written = 0;	// bytes written to token
 
-	bool expectingNumber = true;
 	// Tokenize the expression with floating-point numbers and unary operators supported
 	for (size_t i = 0; i < strlen(expression); i++) {
 		if (expression[i] == ' ') continue;
@@ -29,7 +28,6 @@ int main() {
  			// Handle unary + or -
 			if ((expression[i] == '+' || expression[i] == '-') && isUnaryOperator(expression, i)) {
 				token[written++] = expression[i];
-				expectingNumber = false;
 				continue;
 			}
 
@@ -44,15 +42,12 @@ int main() {
 			token[0] = expression[i];
 			token[1] = '\0';
 			enqueue(&tokensQueue, strdup(token));
-			expectingNumber = true;
 		} else {
 			// Append numbers and decimal points
             if (expression[i] == '.' && written > 0 && strchr(token, '.') == NULL)
 				token[written++] = '.';
-			else if (isDigit(expression[i]) || (expression[i] == '.' && written == 0)) {
+			else if (isDigit(expression[i]) || (expression[i] == '.' && written == 0))
 				token[written++] = expression[i];
-				expectingNumber = false;
-			}
 		}
 	}
 	// Enqueue any remaining token
