@@ -15,7 +15,6 @@ int main() {
 	printf("Enter an expression: ");
 	fgets(expression, sizeof(expression), stdin);
 	expression[strcspn(expression, "\n")] = 0; // Remove trailing newline
-	size_t exp_len = strlen(expression);
 
 	Queue* tokensQueue = createQueue();
 	char token[64];
@@ -23,49 +22,49 @@ int main() {
 
 	bool expectingNumber = true;
 	// Tokenize the expression with floating-point numbers and unary operators supported
-	for (size_t i = 0; i < exp_len; i++) {
-        if (expression[i] == ' ') continue;
+	for (size_t i = 0; i < strlen(expression); i++) {
+		if (expression[i] == ' ') continue;
 
-        if (isOperator(expression[i]) || expression[i] == '(' || expression[i] == ')') {
-            // Handle unary + or -
-            if ((expression[i] == '+' || expression[i] == '-') && isUnaryOperator(expression, i)) {
-                token[written++] = expression[i];
-                expectingNumber = false;
-                continue;
-            }
+		if (isOperator(expression[i]) || expression[i] == '(' || expression[i] == ')') {
+ 			// Handle unary + or -
+			if ((expression[i] == '+' || expression[i] == '-') && isUnaryOperator(expression, i)) {
+				token[written++] = expression[i];
+				expectingNumber = false;
+				continue;
+			}
 
-            // If there is a number in the buffer, enqueue it
-            if (written > 0) {
-                token[written] = '\0';
-                enqueue(&tokensQueue, strdup(token));
-                written = 0;
-            }
+ 			// If there is a number in the buffer, enqueue it
+			if (written > 0) {
+				token[written] = '\0';
+				enqueue(&tokensQueue, strdup(token));
+				written = 0;
+			}
 
-            // Enqueue the operator or parenthesis
-            token[0] = expression[i];
-            token[1] = '\0';
-            enqueue(&tokensQueue, strdup(token));
-            expectingNumber = true;
-        } else {
-            // Append numbers and decimal points
-            if (expression[i] == '.' && written > 0 && strchr(token, '.') == NULL) {
-                token[written++] = '.';
-            } else if (isDigit(expression[i]) || (expression[i] == '.' && written == 0)) {
-                token[written++] = expression[i];
-                expectingNumber = false;
-            }
-        }
-    }
-
-    // Enqueue any remaining token
-    if (written > 0) {
-        token[written] = '\0';
-        enqueue(&tokensQueue, strdup(token));
-    }
+			// Enqueue the operator or parenthesis
+			token[0] = expression[i];
+			token[1] = '\0';
+			enqueue(&tokensQueue, strdup(token));
+			expectingNumber = true;
+		} else {
+			// Append numbers and decimal points
+            if (expression[i] == '.' && written > 0 && strchr(token, '.') == NULL)
+				token[written++] = '.';
+			else if (isDigit(expression[i]) || (expression[i] == '.' && written == 0)) {
+				token[written++] = expression[i];
+				expectingNumber = false;
+			}
+		}
+	}
+	// Enqueue any remaining token
+	if (written > 0) {
+		token[written] = '\0';
+		enqueue(&tokensQueue, strdup(token));
+	}
 
 	Stack* postfix = infixToPostfix(tokensQueue);
 	destroyQueue(&tokensQueue);
 
+	// Print result and free the stack
 	printf("Result: %g\n", calculate(postfix));
 	destroyStack(&postfix);
 }
@@ -115,7 +114,7 @@ int precedence(char c) {
 }
 
 Stack* infixToPostfix(Queue* expression) {
-	if (!expression) return NULL;
+	if (queueIsEmpty(expression)) return NULL;
 
 	Stack* operators = createStack();
 	Stack* postfix = createStack();
@@ -166,8 +165,9 @@ Stack* infixToPostfix(Queue* expression) {
 }
 
 double calculate(Stack* postfix) {
+	if (stackIsEmpty(postfix)) return 0;
+	
 	Stack* operands = createStack();
-
 	while (!stackIsEmpty(postfix)) {
 		char* token = popFromStack(postfix);
 		if (isNumber(token, strlen(token)))
